@@ -325,11 +325,6 @@ function playClick() {
 /* ==========================================================================
     Small UI helpers
    ========================================================================== */
-
-let audioCtx;
-let noiseBuffer;
-let soundOn = false;
-
 function toast(message) {
   const el = $('toast');
   el.textContent = message;

@@ -66,6 +66,13 @@ fillFormatSelect();
    Toolbar
    ========================================================================== */
 
+let audioCtx;
+let noiseBuffer;
+let soundOn = false;
+let mode = true; // False : light theme (default)
+
+const root = document.documentElement;
+
 indentCb.onchange = () => { save(); textarea.focus(); };
 
 fmtSelect.onchange = () => {
@@ -91,11 +98,49 @@ $('bFs').onclick = async () => {
 
 $('bSnd').onclick = () => {
     soundOn = !soundOn;
-    $('bSnd').textContent = soundOn ? '♪ on' : '♪ off';
+    $('bSnd').textContent = soundOn ? '♪' : '♪';
     $('bSnd').classList.toggle('on', soundOn);
     textarea.focus();
 };
 
+$('bMode').onclick = () => {
+    mode = !mode;
+    $('bMode').textContent = mode ? '⏾' : '☀︎';
+
+    // Update theme
+    if (!mode) {
+        setThemeColors({
+            "--desk":  "#0f1520",
+            "--paper": "#172030",
+            "--ink":   "#ebeef5",
+            "--muted": "#9aa7bd",
+            "--ui":    "#a9b6cc",
+            "--key":   "#f2f5fa",
+            "--comment": "#7eb2ff",
+        });
+    } else
+    {
+        // Light theme
+        setThemeColors({
+            "--desk":  "#cdc6b8",
+            "--paper": "#f6f1e4",
+            "--ink":   "#25221d",
+            "--muted": "#4c483e",
+            "--ui":    "#4a453b",
+            "--key":   "#25221d",
+            "--comment": "#173671",
+        });
+
+    }
+
+
+}
+
+function setThemeColors(colors) {
+    for (const [name, value] of Object.entries(colors)) {
+        root.style.setProperty(name, value);
+    }
+}
 
 /* ---------- overlay (source / help) ---------- */
 
