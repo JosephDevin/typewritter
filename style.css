@@ -1,0 +1,370 @@
+/* ---------- Base ---------- */
+
+:root {
+  --desk:  #cdc6b8;
+  --paper: #f6f1e4;
+  --ink:   #25221d;
+  --muted: #8a8372;
+  --ui:    #4a453b;
+  --key:   #25221d;
+  --comment: #173671;
+
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top:    env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+body {
+  font-family: "Courier Prime", "Courier New", Courier, monospace;
+  color: var(--ink);
+}
+
+
+/* ---------- Writing area ---------- */
+
+#wrap {
+  position: fixed;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#wrap::-webkit-scrollbar,
+#paper::-webkit-scrollbar {
+  display: none;
+}
+
+#editor {
+  position: relative;
+}
+
+/* The textarea and the highlight layer must share identical text metrics */
+#paper,
+#hl {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  font: inherit;
+  font-size: 1.15rem;
+  line-height: 1.75;
+
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* On top: receives typing, shows the caret and spell-check underlines,
+   but its own text is invisible (the layer below draws it) */
+#paper {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  outline: 0;
+  resize: none;
+  overflow: hidden;
+
+  background: transparent;
+  color: var(--ink);              /* visible by default (safe fallback) */
+  caret-color: var(--key);
+
+  scrollbar-width: none;
+}
+
+#paper::placeholder {
+  color: var(--muted);
+}
+
+/* Only once the script has switched the highlight layer on (class "hl-on")
+   is the textarea's own text hidden, because #hl then draws it */
+#editor.hl-on #paper {
+  color: transparent;
+}
+
+/* Semi-transparent so the text underneath stays readable when selected */
+#editor.hl-on #paper::selection {
+  background: rgba(36, 87, 184, .25);
+  color: transparent;
+}
+
+/* Behind: draws the visible text, comments in blue */
+#hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--ink);
+}
+
+#hl .cm {
+  color: var(--comment);
+}
+
+
+/* ---------- Bottom toolbar: stamped prints ---------- */
+
+#bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.2rem .8rem calc(env(safe-area-inset-bottom, 0px) + .8rem);
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem .7rem;
+  align-items: center;
+  justify-content: center;
+
+  font-size: .74rem;
+  color: var(--ui);
+  background: linear-gradient(transparent, var(--paper) 65%);
+  transition: opacity .6s;
+  pointer-events: none;
+}
+
+#bar > * {
+  pointer-events: auto;
+}
+
+/* Flat stamped ink prints framed in [ BRACKETS ] */
+.key {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .15rem .1rem;
+  margin: 0;
+
+  font: inherit;
+  font-size: .74rem;
+  line-height: 1.2;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  cursor: pointer;
+  user-select: none;
+
+  transition: color .15s, background-color .15s;
+}
+
+.key::before {
+  content: "[ ";
+  white-space: pre;
+}
+
+.key::after {
+  content: " ]";
+  white-space: pre;
+}
+
+.key:hover {
+  color: var(--ink);
+}
+
+.key:active {
+  transform: translateY(1px);
+}
+
+/* Latched / active states (toggles, focused selects) */
+.key.on,
+.toggle:has(input:checked),
+.select-wrap:has(select:focus) {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* "indent" is a checkbox wearing a print */
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Native <select> framed inside a .key print */
+.select-wrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+}
+
+.select-wrap select:focus {
+  outline: none;
+}
+
+.select-wrap select option {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+#texSelect option:disabled {
+  color: var(--muted);
+}
+
+/* Custom page size (only shown when the format is "Custom…") */
+#cust {
+  align-items: center;
+  gap: .25rem;
+  font-size: .72rem;
+  color: var(--ui);
+}
+
+#cust input[type=number] {
+  width: 3.2rem;
+  font: inherit;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed var(--muted);
+  border-radius: 0;
+  padding: .1rem .2rem;
+  text-align: center;
+}
+
+#cust input[type=number]:focus {
+  outline: none;
+  border-bottom-color: var(--ink);
+}
+
+
+/* ---------- Word count + toast ---------- */
+
+#count {
+  position: fixed;
+  left: .9rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.2rem);
+  font-size: .75rem;
+  color: var(--ui);
+  transition: opacity .6s;
+}
+
+@media (max-width: 720px) {
+  #count {
+    bottom: auto;
+    top: calc(env(safe-area-inset-top, 0px) + .6rem);
+  }
+}
+
+/* Hide the UI while typing; bring it back when the mouse moves or shakes */
+body.idle #bar,
+body.idle #count {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 1rem);
+  transform: translateX(-50%);
+
+  background: var(--ink);
+  color: var(--paper);
+  padding: .35rem .8rem;
+  border-radius: 3px;
+  font-size: .8rem;
+
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+
+#toast.on {
+  opacity: 1;
+}
+
+
+/* ---------- Overlay (source / help) ---------- */
+
+#ov {
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  display: none;
+  flex-direction: column;
+  padding: calc(env(safe-area-inset-top, 0px) + 1rem) 1rem 1rem;
+}
+
+#ov.on {
+  display: flex;
+}
+
+#ov header {
+  display: flex;
+  gap: .5rem;
+  justify-content: flex-end;
+  margin-bottom: .6rem;
+}
+
+#ov button {
+  font: inherit;
+  font-size: .8rem;
+  color: var(--ui);
+  background: transparent;
+  border: 1px solid var(--muted);
+  border-radius: 3px;
+  padding: .2rem .6rem;
+  cursor: pointer;
+}
+
+#ov textarea,
+#ov .help {
+  flex: 1;
+  width: min(90ch, 100%);
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--muted);
+  padding: 1rem;
+
+  font: inherit;
+  font-size: .85rem;
+  line-height: 1.5;
+  overflow: auto;
+}
+
+#ov .help {
+  white-space: pre-wrap;
+  display: none;
+}
