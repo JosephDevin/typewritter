@@ -1,5 +1,12 @@
 /* ---------- DOM references ---------- */
 
+const BOTTOM_OFFSET = 300;   // px between the writing line and the bottom of the window
+const sheetPad = () => Math.round(Math.max(120, scroller.clientWidth * 0.25));
+const focusY = () => Math.max(
+  Math.round(scroller.clientHeight * 0.4),     // never higher than 40% on small screens
+  scroller.clientHeight - BOTTOM_OFFSET
+);
+
 const $ = id => document.getElementById(id);
 
 const textarea   = $('paper');
@@ -9,6 +16,7 @@ const scroller   = $('wrap');
 const sheet      = $('sheet');
 const spacerTop  = $('spTop');
 const spacerBot  = $('spBottom');
+const paperBg    = $('sheetBg');
 
 const indentCb   = $('indent');
 const fmtSelect  = $('fmt');
@@ -50,7 +58,7 @@ function copyStyles(props) {
 // Disables focus changing when right-clicking
 let contextMenuOpen = false;
 
-/** Scrolls so the caret sits in the middle of the window. */
+/** Scrolls so the caret sits on the writing line (typewriter position). */
 function center() {
   if (contextMenuOpen) return;
 
@@ -71,8 +79,9 @@ function center() {
       || parseFloat(computed.fontSize) * 0.75;
 
   textarea.scrollTop = 0;
-  scroller.scrollTop  = editor.offsetTop  + marker.offsetTop  + lineHeight / 2 - scroller.clientHeight / 2;
+  scroller.scrollTop  = editor.offsetTop  + marker.offsetTop  + lineHeight / 2 - focusY();
   scroller.scrollLeft = editor.offsetLeft + marker.offsetLeft - scroller.clientWidth / 2;
+  placePaper();
 }
 
 /** Sizes the column to the page format and the textarea to its content. */
@@ -92,15 +101,21 @@ function fit() {
 
   const savedTop  = scroller.scrollTop;
   const savedLeft = scroller.scrollLeft;
-  const halfWidth  = Math.floor(scroller.clientWidth / 2);
-  const halfHeight = Math.floor(scroller.clientHeight / 2);
+  const halfWidth = Math.floor(scroller.clientWidth / 2);
+  const focus     = focusY();
 
   sheet.style.width        = columnWidth + 'px';
   sheet.style.paddingLeft  = halfWidth + 'px';
   sheet.style.paddingRight = halfWidth + 'px';
   textarea.style.width     = columnWidth + 'px';
 
-  spacerTop.style.height = spacerBot.style.height = halfHeight + 'px';
+  spacerTop.style.height = focus + 'px';
+  spacerBot.style.height = (scroller.clientHeight - focus) + 'px';
+
+  // Lets the CSS (the floor under the writing line) follow the caret line
+  const root = document.documentElement.style;
+  root.setProperty('--focus', focus + 'px');
+  root.setProperty('--lh', parseFloat(getComputedStyle(textarea).lineHeight) + 'px');
 
   textarea.style.height = 'auto';
   textarea.style.height = (textarea.scrollHeight + 1) + 'px';
@@ -108,6 +123,15 @@ function fit() {
 
   scroller.scrollTop  = savedTop;
   scroller.scrollLeft = savedLeft;
+  placePaper();
+}
+
+/** Places the sheet of paper (decoration) behind the text column. */
+function placePaper() {
+  const colW = textarea.offsetWidth;
+  const pad = sheetPad();
+  paperBg.style.width = Math.round(colW + 2 * pad) + 'px';
+  paperBg.style.left  = Math.round(editor.offsetLeft - scroller.scrollLeft - pad) + 'px';
 }
 
 const refreshLayout = () => { fit(); center(); };
@@ -285,6 +309,7 @@ document.addEventListener('selectionchange', () => {
 });
 
 window.addEventListener('resize', refreshLayout);
+scroller.addEventListener('scroll', placePaper, { passive: true });
 
 ['mousemove', 'touchstart'].forEach(type =>
     document.addEventListener(type, showUiOnPointer, { passive: true }));

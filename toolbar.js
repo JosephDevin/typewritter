@@ -15,6 +15,11 @@ const HELP = `SYNTAX
     "quotation"        → « quotation »
     @title My title    → \\maketitle (also @author, @date)
     % a comment        → LaTeX comment (line shown in blue, not typeset)
+    
+    Ctrl + Shift + é = É
+    Ctrl + Shift + è = È
+    Ctrl + Shift + ^ = Ê
+    Ctrl + Shift + A = À
 
     Special characters (% & $ # _ { } ~ ^ \\) are escaped for you,
     except a % at the very start of a line, which starts a comment.
@@ -122,7 +127,7 @@ $('bMode').onclick = () => {
     {
         // Light theme
         setThemeColors({
-            "--desk":  "#cdc6b8",
+            "--desk":  "#f6f1e4",
             "--paper": "#f6f1e4",
             "--ink":   "#25221d",
             "--muted": "#4c483e",

@@ -10,6 +10,9 @@
 
 <body>
 
+<!-- Desk and sheet of paper (decoration) -->
+<div id="desk" aria-hidden="true"><div id="sheetBg"></div></div>
+
 <!-- Writing area -->
 <div id="wrap">
   <div id="sheet">
@@ -21,6 +24,11 @@
     <div id="spBottom"></div>
   </div>
 </div>
+
+<div id="caret" aria-hidden="true"></div>
+
+<!-- Floor: hides everything below the writing line -->
+<div id="floor" aria-hidden="true"></div>
 
 <!-- Toolbar -->
 <div id="bar">
@@ -47,7 +55,7 @@
       <input id="fM" type="number" step="0.1" min="0.5" max="6"  value="2"  title="Margin (cm)">
   </span>
 
-   <button class="key" id="bFs"   title="Toggle fullscreen"> ⛶ </button>
+  <button class="key" id="bFs"   title="Toggle fullscreen"> ⛶ </button>
   <button class="key" id="bSnd"  title="Key-click sound"> ♪ </button>
   <button class="key" id="bHelp" title="Syntax">?</button>
 
@@ -70,5 +78,6 @@
 <script src="typewritter.js"></script>
 <script src="export.js"></script>
 <script src="toolbar.js"></script>
+<script src="accents.js"></script>
 </body>
 </html>
