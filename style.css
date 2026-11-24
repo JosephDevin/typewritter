@@ -1,5 +1,4 @@
 /* ---------- Base ---------- */
-
 :root {
   --desk: #f6f1e4;
   --paper: #f6f1e4;
@@ -31,7 +30,6 @@ body {
   color: var(--ink);
 }
 
-
 /* ---------- Writing area ---------- */
 
 #wrap {
@@ -60,7 +58,7 @@ body {
   border: 0;
 
   font: inherit;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   line-height: 1.75;
 
   white-space: pre-wrap;
@@ -403,8 +401,8 @@ body.idle #count {
 :root { --cut: calc(var(--focus) + var(--lh) / 2 + 3px); }
 
 #wrap {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 35%, #000 var(--cut), transparent var(--cut));
-          mask-image: linear-gradient(to bottom, transparent 0, #000 35%, #000 var(--cut), transparent var(--cut));
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 var(--cut), transparent var(--cut));
+          mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 var(--cut), transparent var(--cut));
 }
 
 /* Hairline marking the writing line */

@@ -1,0 +1,96 @@
+/* ==========================================================================
+   Paper menus for the TEX and FORMAT keys.
+   Colours come straight from your theme (--paper, --ink), so the menus follow
+   the light / dark toggle by themselves.
+   ========================================================================== */
+
+/* The native select is only a data source now: clicks go to the key around it */
+.select-wrap select { pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   The sheet. It hangs from its BOTTOM edge (just above the key) and unfolds
+   upwards, the mirror of the project tree. Only transform and opacity animate.
+   -------------------------------------------------------------------------- */
+
+#menuSheet {
+  position: fixed;
+  z-index: 4;
+  box-sizing: border-box;
+  min-width: 11rem;
+  max-width: calc(100vw - 24px);
+  overflow-y: auto;
+  padding: .7rem .6rem;
+  scrollbar-width: none;
+
+  font-size: .85rem;
+  color: var(--ink);
+  background: var(--paper);
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent),
+    0 1px 2px rgba(0, 0, 0, .14),
+    0 14px 34px rgba(0, 0, 0, .22);
+
+  transform: translateY(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform .12s ease-in, opacity .12s ease, visibility 0s linear .12s;
+}
+
+#menuSheet::-webkit-scrollbar { display: none; }
+
+#menuSheet.open {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition: transform .16s ease-out, opacity .16s ease-out, visibility 0s;
+}/* Lines rise in one after the other, once the sheet is up */
+#menuSheet.entering .mi {
+  animation: miRise .36s cubic-bezier(.2, .8, .2, 1) both;
+  animation-delay: calc(var(--n, 0) * 28ms + 200ms);
+}
+
+@keyframes miRise {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #menuSheet,
+  #menuSheet.open       { transform: none; }
+  #menuSheet            { transition: opacity .15s linear, visibility 0s linear .15s; }
+  #menuSheet.open       { transition: opacity .15s linear, visibility 0s; }
+  #menuSheet.entering .mi { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Items: like the keys, they get stamped in [ brackets ]
+   -------------------------------------------------------------------------- */
+
+#menuSheet .mi {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: .3rem .5rem;
+
+  font: inherit;
+  letter-spacing: .02em;
+  text-align: left;
+  white-space: nowrap;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+#menuSheet .mi::before { content: "[ "; white-space: pre; opacity: 0; }
+#menuSheet .mi::after  { content: " ]"; white-space: pre; opacity: 0; }
+
+#menuSheet .mi:hover::before,
+#menuSheet .mi:hover::after,
+#menuSheet .mi:focus-visible::before,
+#menuSheet .mi:focus-visible::after,
+#menuSheet .mi.current::before,
+#menuSheet .mi.current::after { opacity: 1; }
+
+#menuSheet .mi.current { font-weight: 700; }
+#menuSheet .mi:focus-visible { outline: none; }

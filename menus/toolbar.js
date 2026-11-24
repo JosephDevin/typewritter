@@ -3,28 +3,27 @@
    ========================================================================== */
 
 const HELP = `SYNTAX
-    # Title            → \\section*{}
-    ## Subtitle        → \\subsection*{}
-    ### Smaller        → \\subsubsection*{}
-    > a quote          → quote environment
-    (blank line)       → new paragraph
-    Enter              → new line starting with an indent.
-                         Backspace removes the whole indent.
-    *italic*  **bold**
-    ---  or  * * *     → scene break
-    "quotation"        → « quotation »
-    @title My title    → \\maketitle (also @author, @date)
-    % a comment        → LaTeX comment (line shown in blue, not typeset)
+    # Titre            → \\section*{}
+    ## Sous-titre        → \\subsection*{}
+    ### Plus petit        → \\subsubsection*{}
+    > Une ciation          → Citation
+    (saut de ligne)    → Nouveau paragraphe.
+    Entrée              → Une nouvelle ligne commence par un alinéa.
+                         'Supprimer' supprime l'alinéa.
+    *italique*  **gras**
+    ---  ou  * * *     → Rupture de scène
+    "citation"        → « citation »
+    @title Mon titre    → \\maketitle (avec @author, @date)
+    % un commentaire       → Commentaire LaTex
     
-    Ctrl + Shift + é = É
-    Ctrl + Shift + è = È
-    Ctrl + Shift + ^ = Ê
-    Ctrl + Shift + A = À
+    Maj + Click      →  Ajoute un post-it pour vos prochaines idées.
+    
+    Ctrl + Maj + é = É
+    Ctrl + Maj + è = È
+    Ctrl + Maj + ^ = Ê
+    Ctrl + Maj + A = À
 
-    Special characters (% & $ # _ { } ~ ^ \\) are escaped for you,
-    except a % at the very start of a line, which starts a comment.
-    Your text is saved in this browser automatically.`;
-
+    Votre texte est automatiquement enregistré dans le navigateur`;
 helpView.textContent = HELP;
 
 // ===================== Page formats ========================
@@ -135,7 +134,6 @@ $('bMode').onclick = () => {
             "--key":   "#25221d",
             "--comment": "#173671",
         });
-
     }
 
 

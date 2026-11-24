@@ -1,0 +1,233 @@
+/* ==========================================================================
+   Project / chapter tree (top left)
+
+   The panel is a little sheet of paper.
+   >>> CHANGE THE COLOURS HERE (the three variables just below) <<<
+   ========================================================================== */
+
+#tree {
+  --tree-bg:   #f6f1e4;
+  --tree-fg:   #25221d;
+  --tree-line: color-mix(in srgb, var(--tree-fg) 20%, transparent);
+  --clip:       #8f949c;      /* paperclip wire */
+  --clip-shine: #eef0f3;      /* paperclip highlight */
+
+  position: fixed;
+  top:  max(12px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  z-index: 30;
+  font-family: 'Courier Prime', monospace;
+  font-size: 14px;
+  transition: opacity .25s;
+}
+
+/* Dark variant (follows the system theme: adapt it to your manual toggle if needed) */
+@media (prefers-color-scheme: dark) {
+  #tree {
+    --tree-bg: #f6f1e4;
+    --tree-fg: #25221d;
+  }
+}
+
+/* Fades out while typing, like the toolbar (stays visible while open) */
+body.idle #tree:not(.open) { opacity: 0; }
+
+#tree[hidden] { display: none; }
+
+/* Collapsed state: "Project › Chapter" */
+#treeBtn {
+  display: block;
+  max-width: min(46vw, 420px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   The sheet. It hangs from its top edge and unfolds downwards, like a page
+   swung open on a hinge. Only transform and opacity are animated (cheap,
+   GPU-friendly). #treeSheet is the paper; #treePanel inside it scrolls.
+   -------------------------------------------------------------------------- */
+
+#treeSheet {
+  position: relative;
+  margin-top: 26px;                          /* room for the paperclip */
+  width: min(360px, calc(100vw - 24px));
+
+  color: var(--tree-fg);
+  background-color: var(--tree-bg);
+  /* soft shading near the top edge, as if the sheet was folded there */
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--tree-fg) 7%, transparent),
+    transparent 26px);
+  border-radius: 2px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, .14),
+    0 14px 34px rgba(0, 0, 0, .22);
+
+  transform-origin: top center;
+  transform: perspective(900px) rotateX(-90deg);     /* folded flat, edge-on */
+  opacity: 0;
+  visibility: hidden;
+  transition:                                          /* closing: folds back up */
+    transform  .26s ease-in,
+    opacity    .2s ease .06s,
+    visibility 0s linear .26s;
+}
+
+#tree.open #treeSheet {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition:                                          /* opening: swings down, settles */
+    transform  .62s cubic-bezier(.22, 1.28, .36, 1),
+    opacity    .15s ease,
+    visibility 0s;
+}
+
+/* Paperclip, holding the sheet at the top (decoration only) */
+.tw-clip {
+  position: absolute;
+  top: -22px;
+  left: 30px;
+  width: 26px;
+  height: 61px;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+  transform: rotate(5deg);
+  filter: drop-shadow(1px 2px 1.5px rgba(0, 0, 0, .3));
+}
+.tw-clip path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tw-clip .wire  { stroke: var(--clip);       stroke-width: 2.6; }
+.tw-clip .shine { stroke: var(--clip-shine); stroke-width: .9; opacity: .75;
+                  transform: translate(-.5px, -.5px); }
+
+/* Lines of the sheet rise in one after the other, once the sheet is down */
+#tree.entering .tw-row {
+  animation: twRise .38s cubic-bezier(.2, .8, .2, 1) both;
+  animation-delay: calc(var(--i, 0) * 28ms + 230ms);
+}
+@keyframes twRise {
+  from { opacity: 0; transform: translateY(7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #treeSheet,
+  #tree.open #treeSheet { transform: none; }
+  #treeSheet            { transition: opacity .15s linear, visibility 0s linear .15s; }
+  #tree.open #treeSheet { transition: opacity .15s linear, visibility 0s; }
+  #treeSheet::after     { display: none; }
+  #tree.entering .tw-row { animation: none; }
+}
+
+/* The scrolling part inside the sheet */
+#treePanel {
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: 22px 18px 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Content
+   -------------------------------------------------------------------------- */
+
+#treePanel ul { list-style: none; margin: 0; padding: 0; }
+#treePanel ul ul {                          /* chapters under a project */
+  margin: 2px 0 12px 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--tree-line);
+  counter-reset: chapter;
+}
+#treePanel > ul > li + li { margin-top: 6px; }
+
+#treePanel button,
+#treePanel input {
+  font: inherit;
+  color: inherit;
+}
+#treePanel button {
+  background: none;
+  border: 0;
+  padding: 4px 4px;
+  cursor: pointer;
+}
+#treePanel button:focus-visible {
+  outline: 1px dashed currentColor;
+  outline-offset: 1px;
+}
+
+.tw-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+.tw-row:hover,
+.tw-row:focus-within {
+  background: color-mix(in srgb, var(--tree-fg) 7%, transparent);
+}
+
+.tw-row .name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tw-project > .tw-row .name { font-weight: 700; }
+
+/* Chapters are numbered, like the pages of a manuscript */
+.tw-chapter { counter-increment: chapter; }
+.tw-chapter .name::before {
+  content: counter(chapter) ".";
+  display: inline-block;
+  min-width: 2ch;
+  margin-right: 6px;
+  opacity: .45;
+}
+
+/* The chapter you are writing in */
+.tw-current > .tw-row .name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* Row actions appear on hover / keyboard focus (always visible on touch) */
+.tw-tools { display: flex; opacity: 0; transition: opacity .15s; }
+.tw-row:hover .tw-tools,
+.tw-row:focus-within .tw-tools { opacity: 1; }
+@media (hover: none) { .tw-tools { opacity: 1; } }
+
+.tw-tool { opacity: .6; }
+.tw-tool:hover { opacity: 1; }
+
+/* Inline rename field */
+#treePanel .rename {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  outline: none;
+  padding: 4px 4px;
+}
+
+#treePanel .tw-new {
+  display: block;
+  margin-top: 12px;
+  padding-top: 10px;
+  width: 100%;
+  text-align: left;
+  border-top: 1px solid var(--tree-line);
+  opacity: .6;
+}
+#treePanel .tw-new:hover { opacity: 1; }

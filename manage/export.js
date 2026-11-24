@@ -148,11 +148,11 @@ function parseText(text, isFrench) {
     return { blocks, meta };
 }
 
-function buildPreamble(meta) {
+function buildPreamble(meta, docClass = 'article') {
     const f = getFormat();
 
     const head = [
-        `\\documentclass[${f.pt}pt]{article}`,
+        `\\documentclass[${f.pt}pt]{${docClass}}`,
         '\\usepackage[T1]{fontenc}',
         '\\usepackage[utf8]{inputenc}',
         `\\usepackage[paperwidth=${f.w}cm,paperheight=${f.h}cm,margin=${f.m}cm]{geometry}`,
@@ -167,14 +167,36 @@ function buildPreamble(meta) {
     return head + title;
 }
 
-// Builds the full LaTeX output (preamble + body).
-function build() {
-    const isFrench = DOC_LANGUAGE === 'french';
-    const { blocks, meta } = parseText(textarea.value, isFrench);
+/**
+ * Builds the full LaTeX output (preamble + body).
+ *  - build()      : the chapter in the editor, as an article (unchanged behaviour)
+ *  - build(parts) : a whole project, parts = [{ title, text }, ...] in order,
+ *                   as a report with one \\chapter* per part
+ */
+function build(parts) {
+    const isFrench  = DOC_LANGUAGE === 'french';
+    const isProject = Array.isArray(parts);
+    if (!isProject) parts = [{ title: '', text: textarea.value }];
+
+    const meta   = {};
+    const blocks = [];
+
+    for (const part of parts) {
+        const parsed = parseText(part.text, isFrench);
+
+        // @title / @author / @date: the first chapter that defines one wins
+        for (const key in parsed.meta) {
+            if (!(key in meta)) meta[key] = parsed.meta[key];
+        }
+        if (isProject && part.title) {
+            blocks.push(`\\chapter*{${formatInline(part.title, isFrench)}}`);
+        }
+        blocks.push(...parsed.blocks);
+    }
     const body = blocks.join('\n\n');
 
     const maketitle = meta.title ? '\\maketitle\n\n' : '';
-    return buildPreamble(meta)
+    return buildPreamble(meta, isProject ? 'report' : 'article')
         + '\n\n\\begin{document}\n'
         + maketitle
         + body
@@ -207,12 +229,17 @@ function renderHighlight() {
 
 /* ---------- export / copy ---------- */
 
-function exportTex() {
-    const blob = new Blob([build()], { type: 'application/x-tex;charset=utf-8' });
+const slug = text =>
+    (text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase()
+    || 'document';
+
+function exportTex(tex, filename) {
+    const blob = new Blob([tex], { type: 'application/x-tex;charset=utf-8' });
     const link = document.createElement('a');
 
     link.href = URL.createObjectURL(blob);
-    link.download = '.tex';
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -236,7 +263,16 @@ async function copyTex() {
 
 const texSelect = $('texSelect');
 const texHandlers = {
-    export: () => { exportTex(); textarea.focus(); },
+    exportProject: async () => {
+        const { project, parts } = await Projects.exportParts();
+        exportTex(build(parts), slug(project.name) + '.tex');
+        textarea.focus();
+    },
+    export: () => {
+        const { project, chapter } = Projects.current();
+        exportTex(build(), `${slug(project.name)}-${slug(chapter.title)}.tex`);
+        textarea.focus();
+    },
     copy:   () => copyTex(),
     source: () => openOverlay('src'),
 };
